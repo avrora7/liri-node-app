@@ -1,5 +1,6 @@
 require("dotenv").config();
 var Spotify = require('node-spotify-api');
+var request = require("request");
 
 let keys = require("./keys");
 
@@ -23,7 +24,28 @@ if (nodeArgs[2] !== concert && nodeArgs[2] !== song && nodeArgs[2] !== movie) {
 
 
 var searchConcert = function (searchCriteria) {
-    console.log(searchCriteria)
+    var queryUrl = "https://rest.bandsintown.com/artists/" + encodeURI(searchCriteria) + "/events?app_id=codingbootcamp";
+
+    request(queryUrl, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+            var result = JSON.parse(body)
+console.log(result[0])
+
+for (i = 0; i < result.length; i++) {
+    var nextResult = result[i]
+    console.log("Venue name: " + nextResult.venue.name);
+    console.log("Venue location: " + nextResult.venue.city + " " + nextResult.venue.region + " " + nextResult.venue.country);
+    console.log("")
+}
+
+            // console.log("Movie title: " + result.Title);
+            // console.log("Release Year: " + result.Year);
+            // console.log("IMDB Rating: " + result.imdbRating);
+        }
+        else {
+            console.log(queryUrl)
+        }
+    });
 }
 
 var searchSong = function (searchCriteria) {
@@ -33,55 +55,54 @@ var searchSong = function (searchCriteria) {
         secret: keys.spotify.secret
     });
 
-    spotify.search({ type: 'track', query: searchCriteria }, function(err, data) {
+    spotify.search({ type: 'track', query: searchCriteria }, function (err, data) {
         if (err) {
-          return console.log('Error occurred: ' + err);
+            return console.log('Error occurred: ' + err);
         }
-      //  console.log(data)
-      var allSongs = data.tracks.items;
-      
+        var allSongs = data.tracks.items;
+
         allSongs.forEach(nextSong => {
-          console.log(nextSong.name)
-          console.log(nextSong.artists[0].name) 
-          console.log(nextSong.album.name)
-          console.log(nextSong.href)
-          console.log('----------------********************----------------')
+            console.log(nextSong.name)
+            console.log(nextSong.artists[0].name)
+            console.log(nextSong.album.name)
+            console.log(nextSong.href)
+            console.log('----------------********************----------------')
         })
-      });
+    });
 
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 var searchMovie = function (searchCriteria) {
-    console.log(searchCriteria)
+    var queryUrl = "http://www.omdbapi.com/?t=" + encodeURI(searchCriteria) + "&y=&plot=short&apikey=trilogy";
+
+    request(queryUrl, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+            var result = JSON.parse(body)
+
+            console.log("Movie title: " + result.Title);
+            console.log("Release Year: " + result.Year);
+            console.log("IMDB Rating: " + result.imdbRating);
+
+            var ratings = result.Ratings;
+            for (i = 0; i < ratings.length; i++) {
+                var source = ratings[i].Source;
+                if (source == 'Rotten Tomatoes') {
+                    console.log("Rotten Tomatoes Rating: " + ratings[i].Value)
+                }
+            }
+            console.log("Country: " + result.Country);
+            console.log("Language: " + result.Language);
+            console.log("Plot: " + result.Plot);
+            console.log("Actors: " + result.Actors);
+        }
+    });
 }
-
-
 
 if (nodeArgs[2] == concert) {
     if (nodeArgs[3] == null) {
-        nodeArgs[3] = ""
+        nodeArgs[3] = "Metallica"
     }
     searchConcert(nodeArgs[3])
 }
