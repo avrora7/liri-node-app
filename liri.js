@@ -3,8 +3,8 @@ require("dotenv").config();
 var Spotify = require('node-spotify-api');
 var request = require('request');
 var moment = require('moment');
-
-let keys = require("./keys");
+var fs = require('fs');
+var keys = require("./keys");
 
 var nodeArgs = process.argv;
 
@@ -17,10 +17,30 @@ if (nodeArgs.length < 3 || nodeArgs.length > 4) {
 var concert = "concert-this";
 var song = "spotify-this-song";
 var movie = "movie-this";
+var whatSays = "do-what-it-says";
 
-if (nodeArgs[2] !== concert && nodeArgs[2] !== song && nodeArgs[2] !== movie) {
-    console.log("Enter valid command")
-    return
+var cmd = nodeArgs[2];
+var srch = nodeArgs[3];
+
+if (cmd !== concert && cmd !== song && cmd !== movie && cmd !== whatSays) {
+    console.log("Enter valid command");
+    return;
+}
+
+// do-what-it-says
+if (cmd == whatSays) {
+    var content = fs.readFileSync('random.txt', 'utf8');
+
+    var index = content.indexOf(",");
+    var newCommand = content.substring(0, index).trim();
+    var newValue = content.substring(index + 1).trim();
+
+    cmd = newCommand;
+
+    if (newValue.startsWith('"') && newValue.endsWith('"') || newValue.startsWith("'") && newValue.endsWith("'")) {
+        newValue = newValue.substring(1, newValue.length - 1)
+    }
+    srch = newValue;
 }
 
 // Search concert and display results
@@ -83,7 +103,7 @@ var searchMovie = function (searchCriteria) {
         if (!error && response.statusCode === 200) {
             var result = JSON.parse(body)
 
-            console.log("Movie title: " + result.Title);
+            console.log("Movie Title: " + result.Title);
             console.log("Release Year: " + result.Year);
             console.log("IMDB Rating: " + result.imdbRating);
 
@@ -103,23 +123,23 @@ var searchMovie = function (searchCriteria) {
 }
 
 // Input parameter based command execution and default definition
-if (nodeArgs[2] == concert) {
-    if (nodeArgs[3] == null) {
-        nodeArgs[3] = "Metallica"
+if (cmd == concert) {
+    if (srch == null) {
+        srch = "Metallica"
     }
-    searchConcert(nodeArgs[3])
+    searchConcert(srch)
 }
-else if (nodeArgs[2] == song) {
-    if (nodeArgs[3] == null) {
-        nodeArgs[3] = "The Sign"
+else if (cmd == song) {
+    if (srch == null) {
+        srch = "The Sign"
     }
-    searchSong(nodeArgs[3])
+    searchSong(srch)
 }
 else {
-    if (nodeArgs[3] == null) {
-        nodeArgs[3] = "Mr. Nobody"
+    if (srch == null) {
+        srch = "Mr. Nobody"
     }
-    searchMovie(nodeArgs[3])
+    searchMovie(srch)
 }
 
 
