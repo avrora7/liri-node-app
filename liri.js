@@ -1,6 +1,8 @@
 require("dotenv").config();
+
 var Spotify = require('node-spotify-api');
-var request = require("request");
+var request = require('request');
+var moment = require('moment');
 
 let keys = require("./keys");
 
@@ -21,26 +23,27 @@ if (nodeArgs[2] !== concert && nodeArgs[2] !== song && nodeArgs[2] !== movie) {
     return
 }
 
-
-
+// Search concert and display results
 var searchConcert = function (searchCriteria) {
     var queryUrl = "https://rest.bandsintown.com/artists/" + encodeURI(searchCriteria) + "/events?app_id=codingbootcamp";
 
     request(queryUrl, function (error, response, body) {
         if (!error && response.statusCode === 200) {
             var result = JSON.parse(body)
-console.log(result[0])
 
-for (i = 0; i < result.length; i++) {
-    var nextResult = result[i]
-    console.log("Venue name: " + nextResult.venue.name);
-    console.log("Venue location: " + nextResult.venue.city + " " + nextResult.venue.region + " " + nextResult.venue.country);
-    console.log("")
-}
+            if (result.length === 0) {
+                console.log("No concerts scheduled");
+            }
 
-            // console.log("Movie title: " + result.Title);
-            // console.log("Release Year: " + result.Year);
-            // console.log("IMDB Rating: " + result.imdbRating);
+            for (i = 0; i < result.length; i++) {
+                var nextResult = result[i]
+                console.log("Venue name: " + nextResult.venue.name);
+                console.log("Venue location: " + nextResult.venue.city + " " + nextResult.venue.region + " " + nextResult.venue.country);
+
+                var dateTime = nextResult.datetime;
+                console.log("Event Date: " + moment(dateTime).format('MM/DD/YYYY'))
+                console.log("")
+            }
         }
         else {
             console.log(queryUrl)
@@ -48,6 +51,7 @@ for (i = 0; i < result.length; i++) {
     });
 }
 
+// Search song and display results
 var searchSong = function (searchCriteria) {
 
     var spotify = new Spotify({
@@ -66,14 +70,12 @@ var searchSong = function (searchCriteria) {
             console.log(nextSong.artists[0].name)
             console.log(nextSong.album.name)
             console.log(nextSong.href)
-            console.log('----------------********************----------------')
+            console.log('')
         })
     });
-
-
-
 }
 
+// Search movie and display results
 var searchMovie = function (searchCriteria) {
     var queryUrl = "http://www.omdbapi.com/?t=" + encodeURI(searchCriteria) + "&y=&plot=short&apikey=trilogy";
 
@@ -100,6 +102,7 @@ var searchMovie = function (searchCriteria) {
     });
 }
 
+// Input parameter based command execution and default definition
 if (nodeArgs[2] == concert) {
     if (nodeArgs[3] == null) {
         nodeArgs[3] = "Metallica"
