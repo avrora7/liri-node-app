@@ -8,9 +8,16 @@ var keys = require("./keys");
 
 var nodeArgs = process.argv;
 
+var instruct = function () {
+    console.log("Enter: 'node liri.js [concert-this|spotify-this-song|movie-this] \"<your search parameter>\"'");
+    console.log("or");
+    console.log("Enter: 'node liri.js do-what-it-says'");
+}
+
 // Validate input parameters
 if (nodeArgs.length < 3 || nodeArgs.length > 4) {
     console.log("Invalid parameters");
+    instruct();
     return;
 }
 
@@ -24,6 +31,7 @@ var srch = nodeArgs[3];
 
 if (cmd !== concert && cmd !== song && cmd !== movie && cmd !== whatSays) {
     console.log("Enter valid command");
+    instruct();
     return;
 }
 
